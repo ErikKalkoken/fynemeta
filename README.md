@@ -31,3 +31,11 @@ Then we can use tomlq to read and assign that value to a variable in a UNIX styl
 ```bash
 name=$(tomlq -k name config.toml)
 ```
+
+## Usage
+
+To get the complete usage documentation run the following:
+
+```sh
+tomlq -h
+```

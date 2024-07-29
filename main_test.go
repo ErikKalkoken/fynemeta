@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -87,6 +88,7 @@ func TestFindKey(t *testing.T) {
 		ok   bool
 		want any
 	}{
+		{[]string{"foxtrot"}, false, nil},
 		{[]string{"yankee"}, true, "green"},
 		{[]string{"alpha", "bravo"}, true, int64(4)},
 		{[]string{"charlie", "delta", "echo"}, true, int64(42)},
@@ -96,11 +98,14 @@ func TestFindKey(t *testing.T) {
 		{[]string{"alpha", "invalid"}, false, nil},
 		{[]string{"foxtrot", "4"}, false, nil},
 		{[]string{"golf", "3", "hotel"}, false, nil},
+		{[]string{"alpha"}, false, nil},
 	}
 	for _, tc := range cases {
-		got, ok := findKey(data, tc.path)
-		if assert.Equal(t, tc.ok, ok) {
-			assert.Equal(t, tc.want, got)
-		}
+		t.Run(fmt.Sprintf("should find key for %s", tc.path), func(t *testing.T) {
+			got, ok := findKey(data, tc.path)
+			if assert.Equal(t, tc.ok, ok) {
+				assert.Equal(t, tc.want, got)
+			}
+		})
 	}
 }

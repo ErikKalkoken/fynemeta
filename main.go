@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +22,7 @@ func main() {
 		"",
 		"path to the value in the format <key1>.<key2>\n"+
 			"<key> can be the name of a key in a key/value pair, the name of a table\n"+
-			"or the index of an array element (starting at 0). This option is mandatory.",
+			"or the index of an array element (starting at 0). This option is mandatory.\n",
 	)
 	versionFlag := flag.Bool("v", false, "show the current version")
 	flag.Parse()
@@ -55,7 +56,7 @@ func process(filename string, path string) {
 	p := strings.Split(path, ".")
 	v, ok := findKey(data, p)
 	if !ok {
-		exitWithError(fmt.Sprintf("Failed to find key with path: %s", path))
+		exitWithError(fmt.Sprintf("Failed to find value at %s", path))
 	}
 	switch x := v.(type) {
 	case time.Time:
@@ -114,7 +115,12 @@ func findKey(data any, p []string) (any, bool) {
 		if i < len(p)-1 {
 			data = v
 		} else {
-			return v, true
+			switch x := reflect.ValueOf(v); x.Kind() {
+			case reflect.Map, reflect.Slice:
+				return nil, false
+			default:
+				return v, true
+			}
 		}
 	}
 	return nil, false
