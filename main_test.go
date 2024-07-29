@@ -84,18 +84,22 @@ func TestFindKey(t *testing.T) {
 	}
 	cases := []struct {
 		path []string
+		ok   bool
 		want any
 	}{
-		// {[]string{"india"}, time.Date(2023, 5, 7, 0, 0, 0, 0, time.Local)},
-		{[]string{"golf", "1", "hotel"}, int64(22)},
-		{[]string{"yankee"}, "green"},
-		{[]string{"alpha", "bravo"}, int64(4)},
-		{[]string{"charlie", "delta", "echo"}, int64(42)},
-		{[]string{"foxtrot", "1"}, int64(2)},
+		{[]string{"yankee"}, true, "green"},
+		{[]string{"alpha", "bravo"}, true, int64(4)},
+		{[]string{"charlie", "delta", "echo"}, true, int64(42)},
+		{[]string{"foxtrot", "1"}, true, int64(2)},
+		{[]string{"golf", "1", "hotel"}, true, int64(22)},
+		{[]string{"invalid", "1"}, false, nil},
+		{[]string{"alpha", "invalid"}, false, nil},
+		{[]string{"foxtrot", "4"}, false, nil},
+		{[]string{"golf", "3", "hotel"}, false, nil},
 	}
 	for _, tc := range cases {
 		got, ok := findKey(data, tc.path)
-		if assert.True(t, ok) {
+		if assert.Equal(t, tc.ok, ok) {
 			assert.Equal(t, tc.want, got)
 		}
 	}

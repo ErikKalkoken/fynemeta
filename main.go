@@ -95,10 +95,16 @@ func findKey(data any, p []string) (any, bool) {
 			if err != nil {
 				return nil, false
 			}
+			if i > len(x)-1 {
+				return nil, false
+			}
 			v = x[i]
 		case []map[string]any:
 			i, err := strconv.Atoi(k)
 			if err != nil {
+				return nil, false
+			}
+			if i > len(x)-1 {
 				return nil, false
 			}
 			v = x[i]

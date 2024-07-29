@@ -12,12 +12,18 @@ tomlq is a small command line tool that can print a value from a TOML file. It's
 
 All output is printed to stdout. Date values are formatted as RFC3339.
 
+tomlq will exit with a non-zero value if it encounters an error (e.g. value not found). We recommend enabling the "strict error" mode in shell scripts to ensure those errors are not omitted:
+
+```sh
+set -e
+```
+
 ## Example
 
 Let's say we have a TOML file with the name `config.toml`:
 
 ```toml
-name=Charlie
+name="Charlie"
 ```
 
 Then we can use tomlq to read and assign that value to a variable in a UNIX style shell script:
