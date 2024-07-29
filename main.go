@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -63,12 +64,27 @@ func exitWithError(message string) {
 
 func findKey(data any, p []string) (any, bool) {
 	for i, k := range p {
-		x, ok := data.(map[string]any)
-		if !ok {
-			return nil, false
-		}
-		v, ok := x[k]
-		if !ok {
+		var v any
+		var ok bool
+		switch x := data.(type) {
+		case map[string]any:
+			v, ok = x[k]
+			if !ok {
+				return nil, false
+			}
+		case []any:
+			i, err := strconv.Atoi(k)
+			if err != nil {
+				return nil, false
+			}
+			v = x[i]
+		case []map[string]any:
+			i, err := strconv.Atoi(k)
+			if err != nil {
+				return nil, false
+			}
+			v = x[i]
+		default:
 			return nil, false
 		}
 		if i < len(p)-1 {

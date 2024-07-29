@@ -26,8 +26,18 @@ func TestProcess(t *testing.T) {
 func TestFindKey(t *testing.T) {
 	x := `
 	yankee="green"
+
+	foxtrot=[1, 2, 3]
+
+	[[golf]]
+	hotel=11
+
+	[[golf]]
+	hotel=22
+
 	[alpha]
 	bravo=4
+
 	[charlie.delta]
 	echo=42
 	`
@@ -40,9 +50,11 @@ func TestFindKey(t *testing.T) {
 		path []string
 		want any
 	}{
+		{[]string{"golf", "1", "hotel"}, int64(22)},
 		{[]string{"yankee"}, "green"},
 		{[]string{"alpha", "bravo"}, int64(4)},
 		{[]string{"charlie", "delta", "echo"}, int64(42)},
+		{[]string{"foxtrot", "1"}, int64(2)},
 	}
 	for _, tc := range cases {
 		got, ok := findKey(data, tc.path)
@@ -50,5 +62,4 @@ func TestFindKey(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		}
 	}
-
 }
