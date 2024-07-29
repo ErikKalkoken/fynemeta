@@ -102,9 +102,13 @@ func TestFindKey(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("should find key for %s", tc.path), func(t *testing.T) {
-			got, ok := findKey(data, tc.path)
-			if assert.Equal(t, tc.ok, ok) {
-				assert.Equal(t, tc.want, got)
+			got, err := findKey(data, tc.path)
+			if tc.ok {
+				if assert.NoError(t, err) {
+					assert.Equal(t, tc.want, got)
+				}
+			} else {
+				assert.Error(t, err)
 			}
 		})
 	}

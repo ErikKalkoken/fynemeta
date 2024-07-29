@@ -10,9 +10,9 @@ Print a value from a TOML file.
 
 tomlq is a small command line tool that can print a value from a TOML file. It's main purpose is to make it possible to use values from a TOML file in a shell script.
 
-All output is printed to stdout. Date values are formatted as RFC3339.
+The found value is printed to stdout. Date values are formatted as RFC3339.
 
-tomlq will exit with a non-zero value if it encounters an error (e.g. value not found). We recommend enabling the "strict error" mode in shell scripts to ensure those errors are not omitted:
+tomlq will exit with a non-zero value if it encounters an error (e.g. value not found) and print an error message to stderr. We recommend enabling the "strict error" mode in shell scripts to ensure those errors are handled:
 
 ```sh
 set -e
