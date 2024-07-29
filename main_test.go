@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,13 +15,46 @@ func TestProcess(t *testing.T) {
 	x := `
 	[alpha]
 	bravo=5
+	charlie=1979-05-27T00:32:00-07:00
 	`
 	fp := filepath.Join(p, "temp.toml")
 	if err := os.WriteFile(fp, []byte(x), 0644); err != nil {
 		t.Fatal(err)
 	}
-	got := process(fp, "alpha.bravo")
-	assert.Equal(t, int64(5), got)
+	cases := []struct {
+		path string
+		want string
+	}{
+		{"alpha.bravo", "5"},
+		{"alpha.charlie", "1979-05-27T00:32:00-07:00"},
+	}
+	for _, tc := range cases {
+		got, err := captureOutput(func() {
+			process(fp, tc.path)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, tc.want, got)
+	}
+}
+
+func captureOutput(f func()) (string, error) {
+	orig := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		return "", err
+	}
+	defer r.Close()
+	os.Stdout = w
+	f()
+	os.Stdout = orig
+	w.Close()
+	out, err := io.ReadAll(r)
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
 }
 
 func TestFindKey(t *testing.T) {
@@ -28,6 +62,8 @@ func TestFindKey(t *testing.T) {
 	yankee="green"
 
 	foxtrot=[1, 2, 3]
+
+	india = 2023-05-27
 
 	[[golf]]
 	hotel=11
@@ -50,6 +86,7 @@ func TestFindKey(t *testing.T) {
 		path []string
 		want any
 	}{
+		// {[]string{"india"}, time.Date(2023, 5, 7, 0, 0, 0, 0, time.Local)},
 		{[]string{"golf", "1", "hotel"}, int64(22)},
 		{[]string{"yankee"}, "green"},
 		{[]string{"alpha", "bravo"}, int64(4)},

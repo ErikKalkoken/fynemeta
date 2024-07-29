@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -15,7 +16,7 @@ var ErrNotFound = errors.New("not found")
 
 func main() {
 	flag.Usage = myUsage
-	pathFlag := flag.String("k", "", "key path in the format key1.key2")
+	pathFlag := flag.String("p", "", "path to the value in the format key1.key2")
 	flag.Parse()
 	if len(os.Args) == 1 {
 		flag.Usage()
@@ -28,11 +29,10 @@ func main() {
 		exitWithError("Must provide file path")
 	}
 	filename := flag.Arg(0)
-	v := process(filename, *pathFlag)
-	fmt.Println(v)
+	process(filename, *pathFlag)
 }
 
-func process(filename string, path string) any {
+func process(filename string, path string) {
 	text, err := os.ReadFile(filename)
 	if err != nil {
 		exitWithError(err.Error())
@@ -46,14 +46,19 @@ func process(filename string, path string) any {
 	if !ok {
 		exitWithError(fmt.Sprintf("Failed to find key with path: %s", path))
 	}
-	return v
+	switch x := v.(type) {
+	case time.Time:
+		fmt.Print(x.Format(time.RFC3339))
+	default:
+		fmt.Print(x)
+	}
 }
 
 // myUsage writes a custom usage message to configured output stream.
 func myUsage() {
-	s := "Usage: tomlq -k <key1>[.<key2>[...]] <inputfile>:\n\n" +
-		"Extracts a value from a TOML file.\n"
-		// "For more information please see: https://github.com/ErikKalkoken/stellaris-tool\n\n"
+	s := "Usage: tomlq -p <key1>[.<key2>[...]] <inputfile>:\n\n" +
+		"Print a value from a TOML file.\n" +
+		"For more information please also see: https://github.com/ErikKalkoken/tomlq\n\n"
 	fmt.Fprint(flag.CommandLine.Output(), s)
 }
 
