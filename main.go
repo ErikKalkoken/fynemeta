@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -12,12 +11,24 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-var ErrNotFound = errors.New("not found")
+// Current version need to be injected via ldflags
+var Version = "?"
 
 func main() {
 	flag.Usage = myUsage
-	pathFlag := flag.String("p", "", "path to the value in the format key1.key2")
+	pathFlag := flag.String(
+		"p",
+		"",
+		"path to the value in the format <key1>.<key2>\n"+
+			"<key> can be the name of a key in a key/value pair, the name of a table\n"+
+			"or the index of an array element (starting at 0). This option is mandatory.",
+	)
+	versionFlag := flag.Bool("v", false, "show the current version")
 	flag.Parse()
+	if *versionFlag {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 	if len(os.Args) == 1 {
 		flag.Usage()
 		os.Exit(0)
@@ -56,10 +67,12 @@ func process(filename string, path string) {
 
 // myUsage writes a custom usage message to configured output stream.
 func myUsage() {
-	s := "Usage: tomlq -p <key1>[.<key2>[...]] <inputfile>:\n\n" +
-		"Print a value from a TOML file.\n" +
-		"For more information please also see: https://github.com/ErikKalkoken/tomlq\n\n"
+	s := "Usage: tomlq [options] <inputfile>:\n\n" +
+		"Prints a value from a TOML file to stdout.\n" +
+		"For more information please also see: https://github.com/ErikKalkoken/tomlq\n\n" +
+		"Options:\n"
 	fmt.Fprint(flag.CommandLine.Output(), s)
+	flag.PrintDefaults()
 }
 
 func exitWithError(message string) {

@@ -3,7 +3,7 @@
 Print a value from a TOML file.
 
 [![GitHub Release](https://img.shields.io/github/v/release/ErikKalkoken/tomlq)](https://github.com/ErikKalkoken/tomlq)
-[![build status](https://github.com/ErikKalkoken/tomlq/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ErikKalkoken/tomlq/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/ErikKalkoken/tomlq/actions/workflows/go.yml/badge.svg)](https://github.com/ErikKalkoken/tomlq/actions/workflows/go.yml)
 [![GitHub License](https://img.shields.io/github/license/ErikKalkoken/tomlq)](https://github.com/ErikKalkoken/tomlq)
 
 ## Description
