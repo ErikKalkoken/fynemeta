@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 const (
@@ -35,9 +36,20 @@ func main() {
 			".",
 			"Path to where the AppStream file will be created",
 		)
+		typeFlag := cmd.String(
+			"t",
+			"",
+			"type of metadata file to create. Supported: \"AppStream\". MANDATORY",
+		)
 		cmd.Parse(os.Args[2:])
+		if *typeFlag == "" {
+			exitWithError("Must define which type to generate")
+		}
+		if !slices.Contains([]string{"AppStream"}, *typeFlag) {
+			exitWithError("Invalid type: " + *typeFlag)
+		}
 		source := filepath.Join(*sourceFlag, sourceFilename)
-		if err := appstream(source, *destFlag); err != nil {
+		if err := generate(source, *destFlag, *typeFlag); err != nil {
 			exitWithError(err.Error())
 		}
 	case lookupCmdName:
@@ -47,7 +59,7 @@ func main() {
 			"",
 			"Key path to the value in the format <key1>.<key2>\n"+
 				"<key> can be the name of a key in a key/value pair, the name of a table\n"+
-				"or the index of an array element (starting at 0). This parameter is mandatory.\n",
+				"or the index of an array element (starting at 0). MANDATORY.\n",
 		)
 		sourceFlag := cmd.String(
 			"s",
