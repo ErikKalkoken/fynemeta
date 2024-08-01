@@ -2,12 +2,16 @@ package main
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 )
+
+var errMissingRequiredParameter = errors.New("missing required parameter")
+var errMissingRequiredTable = errors.New("missing required table")
 
 // Component is the top level element of the AppStream metadata XML.
 type Component struct {
@@ -51,6 +55,44 @@ func appstream(path string) error {
 	if _, err := toml.Decode(string(text), &app); err != nil {
 		return fmt.Errorf("failed to decode file as TOML: %w", err)
 	}
+	out, err := generateAppStreamData(app)
+	if err != nil {
+		return err
+	}
+	out2 := xml.Header + string(out)
+	filename := app.Details.ID + ".appdata.xml"
+	if err := os.WriteFile(filename, []byte(out2), 0664); err != nil {
+		return err
+	}
+	fmt.Printf("Created appstream metadata file: %s\n", filename)
+	return nil
+}
+
+func generateAppStreamData(app FyneApp) ([]byte, error) {
+	if app.Website == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Website")
+	}
+	if app.Release["Summary"] == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Release.Summary")
+	}
+	if app.Release["License"] == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Release.License")
+	}
+	if app.Release["Description"] == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Release.Description")
+	}
+	if app.Details.ID == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Details.ID")
+	}
+	if app.Details.Name == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Details.Name")
+	}
+	if app.LinuxAndBSD == nil {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredTable, "LinuxAndBSD")
+	}
+	if len(app.LinuxAndBSD.Categories) == 0 {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "LinuxAndBSD.Categories")
+	}
 	stream := Component{
 		Id:              app.Details.ID,
 		Name:            app.Details.Name,
@@ -89,15 +131,5 @@ func appstream(path string) error {
 		stream.Keywords = &Keywords{app.LinuxAndBSD.Keywords}
 	}
 
-	out, err := xml.MarshalIndent(stream, " ", "  ")
-	if err != nil {
-		return err
-	}
-	out2 := xml.Header + string(out)
-	filename := app.Details.ID + ".appdata.xml"
-	if err := os.WriteFile(filename, []byte(out2), 0664); err != nil {
-		return err
-	}
-	fmt.Printf("Created appstream metadata file: %s\n", filename)
-	return nil
+	return xml.MarshalIndent(stream, " ", "  ")
 }
