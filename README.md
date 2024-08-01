@@ -1,6 +1,6 @@
-# tomlq
+# fynemeta
 
-Print a value from a TOML file.
+A tool to help use Fyne metadata in the build process.
 
 [![GitHub Release](https://img.shields.io/github/v/release/ErikKalkoken/tomlq)](https://github.com/ErikKalkoken/tomlq)
 [![CI/CD](https://github.com/ErikKalkoken/tomlq/actions/workflows/go.yml/badge.svg)](https://github.com/ErikKalkoken/tomlq/actions/workflows/go.yml)
@@ -8,40 +8,7 @@ Print a value from a TOML file.
 
 ## Description
 
-tomlq is a small command line tool that can print a value from a TOML file. It's main purpose is to make it possible to use values from a TOML file in a shell script.
+fynemeta is a small command line tool that helps to use Fyne metadata in the build process.
 
-The found value is printed to stdout. Date values are formatted as RFC3339.
-
-tomlq will exit with a non-zero value if it encounters an error (e.g. value not found) and print an error message to stderr. We recommend enabling the "strict error" mode in shell scripts to ensure those errors are handled:
-
-```sh
-set -e
-```
-
-## Example
-
-Let's say we have a TOML file with the name `config.toml`:
-
-```toml
-name="Charlie"
-```
-
-Then we can use tomlq to read and assign that value to a variable in a shell script.
-
-```bash
-name=$(tomlq -k name config.toml)
-```
-
-or
-
-```bourne
-name=`tomlq -k name config.toml`
-```
-
-## Usage
-
-To get the complete usage documentation run the following:
-
-```sh
-tomlq -h
-```
+- Print metadata values to stdout, so they can be used in shell scripts
+- Generate AppStream metadata files from Fyne metadata

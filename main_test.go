@@ -31,7 +31,7 @@ func TestProcess(t *testing.T) {
 	}
 	for _, tc := range cases {
 		got, err := captureOutput(func() {
-			process(fp, tc.path)
+			lookup(fp, tc.path)
 		})
 		if err != nil {
 			t.Fatal(err)

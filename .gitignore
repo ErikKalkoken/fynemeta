@@ -3,3 +3,4 @@
 tomlq
 .temp/
 test.sh
+*.appdata.xml
