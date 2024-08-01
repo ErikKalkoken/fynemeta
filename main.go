@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -12,40 +13,64 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	filename = "FyneApp.toml"
+)
+
 // Current version need to be injected via ldflags
-var Version = "?"
+var Version = "0.0.0"
 
 func main() {
-	flag.Usage = myUsage
-	pathFlag := flag.String(
-		"p",
+	lookupCmd := flag.NewFlagSet("lookup", flag.ExitOnError)
+	keyFlag := lookupCmd.String(
+		"k",
 		"",
-		"path to the value in the format <key1>.<key2>\n"+
+		"Key path to the value in the format <key1>.<key2>\n"+
 			"<key> can be the name of a key in a key/value pair, the name of a table\n"+
-			"or the index of an array element (starting at 0). This option is mandatory.\n",
+			"or the index of an array element (starting at 0). This parameter is mandatory.\n",
 	)
-	versionFlag := flag.Bool("v", false, "show the current version")
-	flag.Parse()
-	if *versionFlag {
+	pathFlag := lookupCmd.String(
+		"p",
+		".",
+		"Directory path to FyneApp.toml.\n",
+	)
+	versionCmd := flag.NewFlagSet("version", flag.ExitOnError)
+	if len(os.Args) == 1 {
+		printUsage()
+		os.Exit(0)
+	}
+	switch cmd := os.Args[1]; cmd {
+	case "lookup":
+		lookupCmd.Parse(os.Args[2:])
+		if *keyFlag == "" {
+			exitWithError("Must provide path")
+		}
+		path := filepath.Join(*pathFlag, filename)
+		process(path, *keyFlag)
+	case "version":
+		versionCmd.Parse(os.Args[2:])
 		fmt.Println(Version)
 		os.Exit(0)
+	default:
+		fmt.Printf("Unknown command: %s\n\n", cmd)
+		printUsage()
+		os.Exit(1)
 	}
-	if len(os.Args) == 1 {
-		flag.Usage()
-		os.Exit(0)
-	}
-	if *pathFlag == "" {
-		exitWithError("Must provide path")
-	}
-	if len(flag.Args()) == 0 {
-		exitWithError("Must provide file")
-	}
-	filename := flag.Arg(0)
-	process(filename, *pathFlag)
 }
 
-func process(filename string, path string) {
-	text, err := os.ReadFile(filename)
+func printUsage() {
+	s := "Usage: fynemeta <command> [arguments]:\n\n" +
+		"Use Fyne metadata in the build process.\n" +
+		"For more information please also see: https://github.com/ErikKalkoken/tomlq\n\n" +
+		"The commands are:\n" +
+		"\tlookup\t\tprint a value from a TOML file to stdout\n" +
+		"\tversion\t\tprint the tool's version\n\n" +
+		"Use fynemeta <command> -h for more information about a command.\n"
+	fmt.Print(s)
+}
+
+func process(path string, keys string) {
+	text, err := os.ReadFile(path)
 	if err != nil {
 		exitWithError(err.Error())
 	}
@@ -53,7 +78,7 @@ func process(filename string, path string) {
 	if _, err := toml.Decode(string(text), &data); err != nil {
 		exitWithError("failed to decode file as TOML")
 	}
-	p := strings.Split(path, ".")
+	p := strings.Split(keys, ".")
 	v, err := findKey(data, p)
 	if err != nil {
 		exitWithError(err.Error())
@@ -66,26 +91,16 @@ func process(filename string, path string) {
 	}
 }
 
-// myUsage writes a custom usage message to configured output stream.
-func myUsage() {
-	s := "Usage: tomlq [options] <file>:\n\n" +
-		"Prints a value from a TOML file to stdout.\n" +
-		"For more information please also see: https://github.com/ErikKalkoken/tomlq\n\n" +
-		"Options:\n"
-	fmt.Fprint(flag.CommandLine.Output(), s)
-	flag.PrintDefaults()
-}
-
 func exitWithError(message string) {
 	fmt.Fprintf(os.Stderr, "%s\n", message)
 	os.Exit(1)
 }
 
-func findKey(data any, p []string) (any, error) {
-	for i, k := range p {
+func findKey(data any, keys []string) (any, error) {
+	for i, k := range keys {
 		var v any
 		var ok bool
-		current := strings.Join(p[:i], ".")
+		current := strings.Join(keys[:i], ".")
 		if current == "" {
 			current = "<root>"
 		}
@@ -116,7 +131,7 @@ func findKey(data any, p []string) (any, error) {
 		default:
 			return nil, fmt.Errorf("value not found at: %s", current)
 		}
-		if i < len(p)-1 {
+		if i < len(keys)-1 {
 			data = v
 		} else {
 			switch x := reflect.ValueOf(v); x.Kind() {
