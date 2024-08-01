@@ -10,14 +10,14 @@ A tool to help use Fyne metadata in the build process.
 
 fynemeta is a small command line tool that helps to use Fyne metadata in the build process.
 
-- Print metadata values to stdout
+- Print values from a Fyne metadata file to stdout
 - Generate an AppStream metadata file from Fyne metadata
 
 ## Print metadata values
 
 The `lookup` command allows us to print a value from the metadata file to stdout, so we can use it in a shell script.
 
-Let's say we defined the name of our app in our FyneApp.toml file:
+Let's say we have the following definition for name in the `FyneApp.toml` file:
 
 ```toml
 # ...
@@ -43,7 +43,7 @@ name=`fynemeta lookup -k name`
 > [!NOTE]
 > We currently only support a subset of the AppStream specification, which is needed to pass all checks when creating an AppImage. If you need additional parameters please open a feature request or submit a PR.
 
-The `appstream` command generates an AppStream metadata file from a FyneApp.toml file. For that to work it needs to have some additional parameters.
+The `generate` command generates an AppStream metadata file from a `FyneApp.toml` file. For that to work it needs to have some additional parameters.
 
 Here is an example of a complete file:
 

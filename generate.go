@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -46,8 +47,8 @@ type Screenshot struct {
 }
 
 // appstream write an AppStream metadata file from a Fyne metadata file.
-func appstream(path string) error {
-	text, err := os.ReadFile(path)
+func appstream(source, destination string) error {
+	text, err := os.ReadFile(source)
 	if err != nil {
 		return err
 	}
@@ -60,11 +61,11 @@ func appstream(path string) error {
 		return err
 	}
 	out2 := xml.Header + string(out)
-	filename := app.Details.ID + ".appdata.xml"
-	if err := os.WriteFile(filename, []byte(out2), 0664); err != nil {
+	p := filepath.Join(destination, app.Details.ID+".appdata.xml")
+	if err := os.WriteFile(p, []byte(out2), 0664); err != nil {
 		return err
 	}
-	fmt.Printf("Created appstream metadata file: %s\n", filename)
+	fmt.Printf("Created appstream metadata file: %s\n", p)
 	return nil
 }
 

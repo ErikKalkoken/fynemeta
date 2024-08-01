@@ -8,59 +8,63 @@ import (
 )
 
 const (
-	filename         = "FyneApp.toml"
-	appstreamCmdName = "appstream"
-	lookupCmdName    = "lookup"
-	versionCmdName   = "version"
+	sourceFilename  = "FyneApp.toml"
+	generateCmdName = "generate"
+	lookupCmdName   = "lookup"
+	versionCmdName  = "version"
 )
 
 // Current version need to be injected via ldflags
 var Version = "0.0.0"
 
 func main() {
-	appstreamCmd := flag.NewFlagSet(appstreamCmdName, flag.ExitOnError)
-	pathFlag1 := appstreamCmd.String(
-		"p",
-		".",
-		"Directory path to FyneApp.toml.\n",
-	)
-
-	lookupCmd := flag.NewFlagSet(lookupCmdName, flag.ExitOnError)
-	keyFlag := lookupCmd.String(
-		"k",
-		"",
-		"Key path to the value in the format <key1>.<key2>\n"+
-			"<key> can be the name of a key in a key/value pair, the name of a table\n"+
-			"or the index of an array element (starting at 0). This parameter is mandatory.\n",
-	)
-	pathFlag2 := lookupCmd.String(
-		"p",
-		".",
-		"Directory path to FyneApp.toml.\n",
-	)
-	versionCmd := flag.NewFlagSet(versionCmdName, flag.ExitOnError)
 	if len(os.Args) == 1 {
 		printUsage()
 		os.Exit(0)
 	}
 	switch cmd := os.Args[1]; cmd {
-	case appstreamCmdName:
-		appstreamCmd.Parse(os.Args[2:])
-		path := filepath.Join(*pathFlag1, filename)
-		if err := appstream(path); err != nil {
+	case generateCmdName:
+		cmd := flag.NewFlagSet(generateCmdName, flag.ExitOnError)
+		sourceFlag := cmd.String(
+			"s",
+			".",
+			"Path to source file (FyneApp.toml).",
+		)
+		destFlag := cmd.String(
+			"d",
+			".",
+			"Path to where the AppStream file will be created",
+		)
+		cmd.Parse(os.Args[2:])
+		source := filepath.Join(*sourceFlag, sourceFilename)
+		if err := appstream(source, *destFlag); err != nil {
 			exitWithError(err.Error())
 		}
 	case lookupCmdName:
-		lookupCmd.Parse(os.Args[2:])
+		cmd := flag.NewFlagSet(lookupCmdName, flag.ExitOnError)
+		keyFlag := cmd.String(
+			"k",
+			"",
+			"Key path to the value in the format <key1>.<key2>\n"+
+				"<key> can be the name of a key in a key/value pair, the name of a table\n"+
+				"or the index of an array element (starting at 0). This parameter is mandatory.\n",
+		)
+		sourceFlag := cmd.String(
+			"s",
+			".",
+			"Source path to (FyneApp.toml).",
+		)
+		cmd.Parse(os.Args[2:])
 		if *keyFlag == "" {
 			exitWithError("Must provide path")
 		}
-		path := filepath.Join(*pathFlag2, filename)
+		path := filepath.Join(*sourceFlag, sourceFilename)
 		if err := lookup(path, *keyFlag); err != nil {
 			exitWithError(err.Error())
 		}
 	case versionCmdName:
-		versionCmd.Parse(os.Args[2:])
+		cmd := flag.NewFlagSet(versionCmdName, flag.ExitOnError)
+		cmd.Parse(os.Args[2:])
 		fmt.Println(Version)
 		os.Exit(0)
 	default:
@@ -80,7 +84,7 @@ func printUsage() {
 		command     string
 		description string
 	}{
-		{appstreamCmdName, "generate an appstream metadata file from the Fyne metadata file"},
+		{generateCmdName, "generate an appstream metadata file from the Fyne metadata file"},
 		{lookupCmdName, "print a value from a TOML file to stdout"},
 		{versionCmdName, "print the tool's version"},
 	}
