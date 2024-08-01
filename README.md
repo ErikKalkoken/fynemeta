@@ -26,10 +26,16 @@ Let's say we have a TOML file with the name `config.toml`:
 name="Charlie"
 ```
 
-Then we can use tomlq to read and assign that value to a variable in a UNIX style shell script:
+Then we can use tomlq to read and assign that value to a variable in a shell script.
 
 ```bash
 name=$(tomlq -k name config.toml)
+```
+
+or
+
+```bourne
+name=`tomlq -k name config.toml`
 ```
 
 ## Usage
