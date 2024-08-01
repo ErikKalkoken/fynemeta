@@ -1,4 +1,4 @@
-module example/tomlq
+module github.com/ErikKalkoken/fynemeta
 
 go 1.22.4
 
