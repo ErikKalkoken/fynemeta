@@ -78,9 +78,6 @@ func generateXML(app FyneApp) ([]byte, error) {
 	if app.Website == "" {
 		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Website")
 	}
-	if app.Release["Summary"] == "" {
-		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Release.Summary")
-	}
 	if app.Release["License"] == "" {
 		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Release.License")
 	}
@@ -99,11 +96,14 @@ func generateXML(app FyneApp) ([]byte, error) {
 	if len(app.LinuxAndBSD.Categories) == 0 {
 		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "LinuxAndBSD.Categories")
 	}
+	if app.LinuxAndBSD.Comment == "" {
+		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "LinuxAndBSD.Comment")
+	}
 	component := Component{
 		Type:            "desktop-application",
 		Id:              app.Details.ID,
 		Name:            app.Details.Name,
-		Summary:         app.Release["Summary"],
+		Summary:         app.LinuxAndBSD.Comment,
 		MetadataLicense: app.Release["License"],
 		ProjectLicense:  app.Release["License"],
 		LaunchAble: Parameter{

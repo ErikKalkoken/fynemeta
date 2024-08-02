@@ -59,8 +59,7 @@ Website = "https://github.com/ErikKalkoken/janice"
 
 [Release]
   BuildName = "janice"
-  Summary = "A desktop app for viewing large JSON files"
-  Description = "<p>A desktop app for viewing large JSON files.</p>"  # note that some HTML is allows here
+  Description = "<p>A desktop app for viewing large JSON files.</p>"  # note that some HTML is allowed here
   License = "MIT"
   Screenshots = "https://cdn.imgpile.com/f/0IrYBjJ_xl.png" # optional, use comma as delimiter to define multiple urls
   ContentRating = "oars-1.1"  # optional
@@ -68,7 +67,7 @@ Website = "https://github.com/ErikKalkoken/janice"
 [LinuxAndBSD]
   GenericName = "JSON viewer"
   Categories = ["Utility"]
-  Comment = "View large JSON files"
+  Comment = "A desktop app for viewing large JSON files"
   Keywords = ["json", "viewer"]  # optional
 ```
 
