@@ -11,12 +11,17 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	fileExtension = ".metainfo.xml"
+)
+
 var errMissingRequiredParameter = errors.New("missing required parameter")
 var errMissingRequiredTable = errors.New("missing required table")
 
 // Component is the top level element of the AppStream metadata XML.
 type Component struct {
 	XMLName         xml.Name     `xml:"component"`
+	Type            string       `xml:"type,attr"`
 	Id              string       `xml:"id"`
 	Name            string       `xml:"name"`
 	Summary         string       `xml:"summary"`
@@ -24,7 +29,7 @@ type Component struct {
 	ProjectLicense  string       `xml:"project_license"`
 	Description     any          `xml:"description"`
 	LaunchAble      Parameter    `xml:"launchable"`
-	URL             Parameter    `xml:"url"`
+	URL             *Parameter   `xml:"url,omitempty"`
 	ContentRating   Parameter    `xml:"content_rating,omitempty"`
 	Screenshots     []Screenshot `xml:"screenshots>screenshot,omitempty"`
 	Categories      []string     `xml:"categories>category"`
@@ -56,20 +61,20 @@ func generate(source, destination, typ string) error {
 	if _, err := toml.Decode(string(text), &app); err != nil {
 		return fmt.Errorf("failed to decode file as TOML: %w", err)
 	}
-	out, err := generateAppStreamData(app)
+	metainfo, err := generateXML(app)
 	if err != nil {
 		return err
 	}
-	out2 := xml.Header + string(out)
-	p := filepath.Join(destination, app.Details.ID+".appdata.xml")
-	if err := os.WriteFile(p, []byte(out2), 0664); err != nil {
+	out := xml.Header + string(metainfo)
+	p := filepath.Join(destination, app.Details.ID+fileExtension)
+	if err := os.WriteFile(p, []byte(out), 0664); err != nil {
 		return err
 	}
 	fmt.Printf("Created %s file: %s\n", typ, p)
 	return nil
 }
 
-func generateAppStreamData(app FyneApp) ([]byte, error) {
+func generateXML(app FyneApp) ([]byte, error) {
 	if app.Website == "" {
 		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "Website")
 	}
@@ -94,7 +99,8 @@ func generateAppStreamData(app FyneApp) ([]byte, error) {
 	if len(app.LinuxAndBSD.Categories) == 0 {
 		return nil, fmt.Errorf("%w: %s", errMissingRequiredParameter, "LinuxAndBSD.Categories")
 	}
-	stream := Component{
+	component := Component{
+		Type:            "desktop-application",
 		Id:              app.Details.ID,
 		Name:            app.Details.Name,
 		Summary:         app.Release["Summary"],
@@ -104,15 +110,14 @@ func generateAppStreamData(app FyneApp) ([]byte, error) {
 			Type:  "desktop-id",
 			Value: app.Details.ID + ".desktop",
 		},
-		URL: Parameter{
-			Type:  "homepage",
-			Value: app.Website,
-		},
 		ContentRating: Parameter{
 			Type: app.Release["ContentRating"],
 		},
 		Categories: app.LinuxAndBSD.Categories,
 	}
+	component.Description = struct {
+		Value string `xml:",innerxml"`
+	}{app.Release["Description"]}
 
 	str := app.Release["Screenshots"]
 	if str != "" {
@@ -121,16 +126,17 @@ func generateAppStreamData(app FyneApp) ([]byte, error) {
 		for i, u := range urls {
 			sst[i] = Screenshot{Type: "default", Image: u}
 		}
-		stream.Screenshots = sst
+		component.Screenshots = sst
 	}
-
-	stream.Description = struct {
-		Value string `xml:",innerxml"`
-	}{app.Release["Description"]}
-
+	if app.Website != "" {
+		component.URL = &Parameter{
+			Type:  "homepage",
+			Value: app.Website,
+		}
+	}
 	if len(app.LinuxAndBSD.Keywords) > 0 {
-		stream.Keywords = &Keywords{app.LinuxAndBSD.Keywords}
+		component.Keywords = &Keywords{app.LinuxAndBSD.Keywords}
 	}
 
-	return xml.MarshalIndent(stream, " ", "  ")
+	return xml.MarshalIndent(component, " ", "  ")
 }

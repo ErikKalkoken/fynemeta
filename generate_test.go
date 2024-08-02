@@ -9,7 +9,7 @@ import (
 
 func TestGenerate(t *testing.T) {
 	t.Run("can deal with empty struct", func(t *testing.T) {
-		_, err := generateAppStreamData(FyneApp{})
+		_, err := generateXML(FyneApp{})
 		assert.Error(t, err)
 
 	})
@@ -100,7 +100,7 @@ func TestGenerateErrorHandling(t *testing.T) {
 	}
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("should detect incomplete metadata. No#%d", i+1), func(t *testing.T) {
-			_, err := generateAppStreamData(tc.app)
+			_, err := generateXML(tc.app)
 			if tc.err != nil {
 				assert.ErrorIs(t, err, tc.err)
 			} else {

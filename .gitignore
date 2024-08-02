@@ -3,5 +3,5 @@
 tomlq
 .temp/
 test.sh
-*.appdata.xml
+*.metainfo.xml
 fynemeta

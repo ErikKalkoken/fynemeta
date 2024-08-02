@@ -73,4 +73,4 @@ Website = "https://github.com/ErikKalkoken/janice"
 ```
 
 > [!TIP]
-> For a more detailed explanation on which values are allows for each parameter, please see the [AppStream Specification](https://www.freedesktop.org/software/appstream/docs/index.html) at freedesktop.org.
+> For a more detailed explanation on which values are allows for each parameter, please see the [AppStream Specification - Desktop Application](https://www.freedesktop.org/software/appstream/docs/sect-Metadata-Application.html) at freedesktop.org.
