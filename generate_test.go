@@ -156,7 +156,7 @@ func TestGenerate(t *testing.T) {
 	}
 	err := generate(source, tempDir, "AppStream")
 	if assert.NoError(t, err) {
-		target := filepath.Join(tempDir, "io.github.erikkalkoken.janice.metainfo.xml")
+		target := filepath.Join(tempDir, "io.github.erikkalkoken.janice.appdata.xml")
 		byt, err := os.ReadFile(target)
 		if assert.NoError(t, err) {
 			xml := string(byt)

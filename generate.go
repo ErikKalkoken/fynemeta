@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	fileExtension = ".metainfo.xml"
+	fileExtension = ".appdata.xml"
 )
 
 var errMissingRequiredParameter = errors.New("missing required parameter")
